@@ -97,10 +97,17 @@ fun HomeScreen() {
                     sampleRate = outSamplingRate
                 )
 
+                // 音声フォルダにコピー（MediaStore に登録）
+                AudioProcessor.addAudioFolder(
+                    context = context,
+                    file = encodeFile
+                )
+
                 // 消す
                 withContext(Dispatchers.IO) {
                     decodeFile.delete()
                     upsamplingFile.delete()
+                    encodeFile.delete()
                 }
 
                 currentState.value = AudioProcessorProgress.Complete

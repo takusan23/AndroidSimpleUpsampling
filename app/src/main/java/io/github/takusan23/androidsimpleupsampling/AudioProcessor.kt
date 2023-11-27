@@ -5,6 +5,9 @@ import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.media.MediaMuxer
 import android.net.Uri
+import android.os.Environment
+import android.provider.MediaStore
+import androidx.core.content.contentValuesOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
@@ -149,6 +152,30 @@ object AudioProcessor {
                     )
                     outputStream.write(upsamplingData)
                 }
+            }
+        }
+    }
+
+    /**
+     * 音声フォルダにコピーする
+     *
+     * @param context [Context]
+     * @param file ファイル
+     */
+    fun addAudioFolder(
+        context: Context,
+        file: File
+    ) {
+        val contentResolver = context.contentResolver
+        val contentValues = contentValuesOf(
+            MediaStore.MediaColumns.DISPLAY_NAME to file.name,
+            // MediaStore.MediaColumns.RELATIVE_PATH は android 10 以降
+            MediaStore.MediaColumns.RELATIVE_PATH to "${Environment.DIRECTORY_MUSIC}/AndroidSimpleUpsampling"
+        )
+        val uri = contentResolver.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, contentValues)
+        contentResolver.openOutputStream(uri!!)?.use { outputStream ->
+            file.inputStream().use { inputStream ->
+                inputStream.copyTo(outputStream)
             }
         }
     }
